@@ -1,0 +1,46 @@
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Semaphore;
+
+public class MainClass {
+
+    private static long time = System.currentTimeMillis();
+    public long getTime() { return time;}
+   // public void setTime() {time = System.currentTimeMillis();}
+    public static final int CARS_COUNT = 4;
+    public static final CountDownLatch cd = new CountDownLatch(CARS_COUNT);
+    public static final CountDownLatch cd1 = new CountDownLatch(CARS_COUNT);
+    public static final CyclicBarrier cb = new CyclicBarrier(CARS_COUNT);
+    public static final Semaphore smp = new Semaphore(CARS_COUNT/2);
+
+    public static void main (String[] args) {
+        System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Подготовка!!!");
+        Race race = new Race(new Road(40), new Road(60), new Tunnel());
+        Car[] cars = new Car[CARS_COUNT];
+
+        for (int i = 0; i < cars.length; i++) {
+            cars[i] = new Car(race, (int) (20 +  (Math.random() * 10)));
+        }
+
+        for (int i = 0; i < cars.length; i++) {
+            new Thread(cars[i]).start();
+        }
+
+        try {
+            cd.await();    // ожидает завершения операции
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Гонка началась!!!");
+        System.out.println("Время: " + (System.currentTimeMillis() - time));
+
+        try {
+            cd1.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Гонка закончилась!!!");
+    }
+}
